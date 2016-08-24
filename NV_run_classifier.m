@@ -63,17 +63,12 @@ NV_filters;
 
 % time of day
 start_date = datevec(trial_t0);
-cur_hour = start_date(4);
-Nhours = start_date(5)/60 + start_date(6)/3600;  % number of hours passed since start time
+start_hour = start_date(4);   %  starting hour to use with the classifier
+start_circ = start_date(5)/60 + start_date(6)/3600;  
+nHours = 0;         % number of hours passed since start_circ
 
 % NB our sz probability vector is SzProb = [00:00 01:00 02:00 ... 23:00].
 % so need to add one to the indexing
-
-% portal_times = time_matrix{iPt};  % this is all job start times (s) for the patient
-% t_abs_0 = portal_times(iSeg);     % this is for the current job - T absolute zero THIS VALUE SHOULD NOT BE EDITED
-% t_abs_0 = t_test + t_abs_0 - featureAvWin;      % adjust forward by training period & back to give some overlap for averaging
-% segment_length = 24*60*60*segment_length; % get to seconds (from days)
-
 
 %% start grabbing data
 
@@ -88,18 +83,22 @@ out = zeros(2,segment_length);
 N = segment_length / maxT;
 iSec = 0;       % counts the seconds
 
-for n = 1:N
+for n = 0:N
     
-    % shift timer depending on which chunk we're in (ref to absolute 0)
-    t0 = t0 + maxT;
+    % shift timer depending on which chunk we're in (ref to t0)
+    startT = t0 + n*maxT;
+    % update our circadian timer
+    nHours = start_circ + startT;
+    curHour = mod(start_hour + nHours,24);  % current hour is starting hour plus number of hours passed
+    
     
     % get the data from the portal
     try
-        Data = getvalues(patient.data,t0 * 1e6,(maxT + 2*extraTime)* 1e6,iCh);
+        Data = getvalues(patient.data,startT * 1e6,(maxT + 2*extraTime)* 1e6,iCh);
     catch
         % try again
         try
-            Data = getvalues(patient.data,t0 * 1e6,(maxT + 2*extraTime) * 1e6,iCh);
+            Data = getvalues(patient.data,startT * 1e6,(maxT + 2*extraTime) * 1e6,iCh);
         catch
             % maybe lost connection.
             display('early termination');
@@ -126,6 +125,11 @@ for n = 1:N
         
         % calculate features from data (all 80 features)
         features = calculate_features(curSeg,iFeatures,filters,round(Fs_actual*extraTime));
+        
+        % normalize
+        if featureNormalize
+            
+        end
         
     end % end feature segments
     

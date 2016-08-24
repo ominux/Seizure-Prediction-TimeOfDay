@@ -68,10 +68,10 @@ all_data_labels = reshape(all_data_labels,1,N*2*NSz);
 %% Independence criteria
 % narrow feature vector down to 16 features
 if featureNormalize
-    
+    mu = mean(all_data_train,2);
+    sigma = std(all_data_train,[],2);
     for n = 1:80
-        all_data_train(n,:) = (all_data_train(n,:) - mean(all_data_train(n,:))) ./ ...
-            std(all_data_train(n,:));
+        all_data_train(n,:) = (all_data_train(n,:) - mu(n)) ./ sigma(n);
     end
     
 end

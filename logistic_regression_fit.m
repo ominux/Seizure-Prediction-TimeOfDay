@@ -81,6 +81,8 @@ end
 
 end
 
+%% CALL FUNCTIONS ARE HERE
+
 function g = sigmoid(z)
 %SIGMOID Compute sigmoid functoon
 %   J = SIGMOID(z) computes the sigmoid of z.

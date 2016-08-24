@@ -68,10 +68,10 @@ all_data_labels = reshape(all_data_labels,1,N*2*NSz);
 %% Independence criteria
 % narrow feature vector down to 16 features
 if featureNormalize
-    
+    mu = mean(all_data_train,2);
+    sigma = std(all_data_train,[],2);
     for n = 1:80
-        all_data_train(n,:) = (all_data_train(n,:) - mean(all_data_train(n,:))) ./ ...
-            std(all_data_train(n,:));
+        all_data_train(n,:) = (all_data_train(n,:) - mu(n)) ./ sigma(n);
     end
     
 end
@@ -81,6 +81,10 @@ corrX = mean(abs(corr(all_data_train')));
 iFeatures = I(1:Nfeatures);  % takes the Nfeatures smallest correlations
 % get it back into chron. order
 iFeatures = sort(iFeatures);
+
+% get the mean & std
+mu = mu(iFeatures);
+sigma = sigma(iFeatures);
 
 %% Train Logistic Regression
 all_data_train = all_data_train(iFeatures,:);
@@ -103,4 +107,4 @@ end
 
 %% save the results
 save(['TrainingData/' patient 'Classifier'],'W_base','W_weighted','featureNormalize','SzProb', ...
-    'iFeatures','Pobs','Nfeatures');
+    'iFeatures','Pobs','Nfeatures','mu','sigma');
